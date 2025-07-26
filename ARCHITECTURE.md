@@ -1,13 +1,13 @@
 # MarketAI - System Architecture
 
-This document outlines the architecture of the MarketAI system.
+This document outlines the architecture of the MarketAI system, which is designed to be a close reflection of the `tradesage-mvp` reference project.
 
 ## High-Level Design
 
 MarketAI is composed of three main layers:
 1.  **Frontend**: A Streamlit web application for user interaction.
 2.  **Backend**: A FastAPI server that hosts the agentic workflow.
-3.  **Data Layer**: A MongoDB database for persistence and memory.
+3.  **Data Layer**: A PostgreSQL database with SQLAlchemy for persistence and memory.
 
 ## System Diagram
 
@@ -15,15 +15,19 @@ MarketAI is composed of three main layers:
 [USER] -> [Frontend (Streamlit)] -> [Backend (FastAPI)]
                                           |
                                           v
-                                [Orchestrator Agent]
-                               /          |           \
-                              /           |            \
-                             v            v             v
-        [Hypothesis Agent] [Research Agent] [Contradiction Agent]
-                             \            |             /
-                              \           |            /
-                               v          v           v
-                                [Synthesis Agent] -> [MongoDB]
+                                   [Orchestrator]
+                                          |
+                         +----------------+----------------+
+                         |                |                |
+                         v                v                v
+            [HypothesisAgent] -> [ContextAgent] -> [ResearchAgent]
+                                          |      [ContradictionAgent]
+                                          |                |
+                                          v                v
+                                [SynthesisAgent] -> [AlertAgent]
+                                          |                |
+                                          v                v
+                                     [Database (PostgreSQL)]
                                           |
                                           v
                                  [Final Report] -> [Frontend]
@@ -39,24 +43,27 @@ MarketAI is composed of three main layers:
     - Display the final analysis report in a user-friendly format.
 
 ### 2. Backend (`src/adk/`)
-- **Technology**: FastAPI, Google ADK, Gemini API
+- **Technology**: FastAPI, Google Gemini API
 - **Components**:
-    - **`main.py`**: The FastAPI application entry point. Defines the `/analyze` endpoint.
-    - **`orchestrator.py`**: The core planner/executor. It manages the flow of data between all other agents.
-    - **`agents/`**: Contains the specialized agents:
+    - **`main.py`**: The FastAPI application entry point. Defines the `/process` endpoint and handles database sessions.
+    - **`orchestrator.py`**: The core planner/executor. It manages the sequential flow of data between all agents.
+    - **`agents/`**: Contains the six specialized agents:
         - `HypothesisAgent`: Structures the user's query.
+        - `ContextAgent`: Enriches the hypothesis with market context.
         - `ResearchAgent`: Gathers supporting evidence.
         - `ContradictionAgent`: Finds counter-arguments and risks.
-        - `SynthesisAgent`: Aggregates all data and generates the final confidence score and report.
+        - `SynthesisAgent`: Aggregates all data and generates the final report.
+        - `AlertAgent`: Creates actionable alerts from the report.
 
 ### 3. Data Layer (`src/database/`)
-- **Technology**: MongoDB, PyMongo
+- **Technology**: PostgreSQL, SQLAlchemy
 - **Responsibilities**:
-    - Store the results of each analysis.
-    - Log the inputs and outputs of each agent for traceability.
-    - Act as the long-term memory for the system.
+    - Store the results of each analysis in a `reports` table.
+    - Store the generated alerts in an `alerts` table.
+    - Provide a structured, relational long-term memory for the system.
 
-### 4. Tools (`src/tools/`)
+### 4. Services and Tools (`src/services/`, `src/tools/`)
 - **Responsibilities**:
     - Provide agents with the ability to interact with the outside world.
-    - Examples: A tool for scraping financial news websites, a tool for fetching stock prices from an API.
+    - **Services** contain the complex logic for calling external APIs (e.g., Alpha Vantage, FMP) and handling fallbacks.
+    - **Tools** provide simple, clean interfaces for the agents to use the services.
