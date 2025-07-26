@@ -1,42 +1,109 @@
-# Agentic AI App Hackathon Template
+# MarketAI - Agentic Financial Analysis
 
-Welcome! This repository is your starting point for the **Agentic AI App Hackathon**. It includes:
+MarketAI is an AI-powered system that automates the research process behind trading hypotheses. It treats market predictions as testable scientific statements, using a multi-agent system to provide evidence-based confidence scores.
 
-- A consistent folder structure  
-- An environment spec (`environment.yml` or `Dockerfile`)  
-- Documentation placeholders to explain your design and demo
+This project is a submission for the Agentic AI App Hackathon.
 
-## 📋 Submission Checklist
+## 📋 Table of Contents
 
-- [ ] All code in `src/` runs without errors  
-- [ ] `ARCHITECTURE.md` contains a clear diagram sketch and explanation  
-- [ ] `EXPLANATION.md` covers planning, tool use, memory, and limitations  
-- [ ] `DEMO.md` links to a 3–5 min video with timestamped highlights  
+- [Quick Start](#-quick-start)
+- [Architecture Overview](#-architecture-overview)
+- [Repository Structure](#-repository-structure)
+- [Local Development](#-local-development)
+- [Cloud Deployment](#-cloud-deployment)
 
+## 🚀 Quick Start
 
-## 🚀 Getting Started
+### Prerequisites
 
-1. **Clone / Fork** this template.  Very Important. Fork Name MUST be the same name as the teamn name
+- **Python 3.11+** installed
+- **Docker** (for containerized deployment)
+- **MongoDB** instance (local or cloud-based)
+- **Google Gemini API Key**
 
+### Environment Setup
 
-## 📂 Folder Layout
+```bash
+# 1. Clone the repository
+git clone <your-repo-url>
+cd MarketAI
 
-![Folder Layout Diagram](images/folder-githb.png)
+# 2. Set up environment variables
+cp .env.example .env
 
+# 3. Edit the .env file with your credentials:
+# MONGO_URI="your-mongodb-connection-string"
+# GEMINI_API_KEY="your-gemini-api-key"
 
+# 4. Install dependencies
+make install
+```
 
-## 🏅 Judging Criteria
+## 🏗️ Architecture Overview
 
-- **Technical Excellence **  
-  This criterion evaluates the robustness, functionality, and overall quality of the technical implementation. Judges will assess the code's efficiency, the absence of critical bugs, and the successful execution of the project's core features.
+MarketAI uses a multi-agent architecture orchestrated by a central controller. The system is built with Python, FastAPI, and the Google Agent Development Kit (ADK).
 
-- **Solution Architecture & Documentation **  
-  This focuses on the clarity, maintainability, and thoughtful design of the project's architecture. This includes assessing the organization and readability of the codebase, as well as the comprehensiveness and conciseness of documentation (e.g., GitHub README, inline comments) that enables others to understand and potentially reproduce or extend the solution.
+- **Backend**: A FastAPI server that exposes an API for analyzing financial hypotheses.
+- **Agents**: A team of specialized AI agents built with the Gemini API, each responsible for a specific part of the analysis (structuring, research, contradiction, synthesis).
+- **Database**: MongoDB is used for storing analysis results, agent logs, and other persistent data.
+- **Frontend**: A simple Streamlit application for interacting with the system.
 
-- **Innovative Gemini Integration **  
-  This criterion specifically assesses how effectively and creatively the Google Gemini API has been incorporated into the solution. Judges will look for novel applications, efficient use of Gemini's capabilities, and the impact it has on the project's functionality or user experience. You are welcome to use additional Google products.
+(A more detailed diagram will be in `ARCHITECTURE.md`)
 
-- **Societal Impact & Novelty **  
-  This evaluates the project's potential to address a meaningful problem, contribute positively to society, or offer a genuinely innovative and unique solution. Judges will consider the originality of the idea, its potential real‑world applicability, and its ability to solve a challenge in a new or impactful way.
+## 📁 Repository Structure
 
+```
+MarketAI/
+├── Dockerfile              # Container configuration
+├── Makefile                # Development commands
+├── README.md               # This file
+├── requirements.txt        # Python dependencies
+├── .env.example            # Environment variable template
+├── src/
+│   ├── adk/
+│   │   ├── main.py         # FastAPI app entry point
+│   │   ├── orchestrator.py # Core agent workflow planner/executor
+│   │   └── agents/         # Specialized agent definitions
+│   ├── database/
+│   │   ├── database.py     # MongoDB connection
+│   │   └── crud.py         # Database operations
+│   ├── tools/              # Tools for agents (e.g., web scraper)
+│   └── frontend/
+│       └── streamlit_app.py # Streamlit UI
+├── ARCHITECTURE.md         # System architecture details
+├── EXPLANATION.md          # Agent reasoning and design choices
+└── DEMO.md                 # Link to the video demo
+```
 
+## 💻 Local Development
+
+### Start the Backend Server
+
+```bash
+make run-backend
+```
+The backend will be available at `http://localhost:8080`.
+
+### Start the Frontend Application
+
+```bash
+make run-frontend
+```
+The frontend will be available at `http://localhost:8501`.
+
+## ☁️ Cloud Deployment
+
+The application is designed to be deployed as a containerized service on platforms like Google Cloud Run.
+
+### Build the Docker Image
+
+```bash
+docker build -t marketai-app .
+```
+
+### Run the Docker Container
+
+```bash
+docker run -p 8080:8080 -v $(pwd)/.env:/app/.env marketai-app
+```
+This command runs the container and makes the application available on `http://localhost:8080`.
